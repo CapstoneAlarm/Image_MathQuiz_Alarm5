@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  * I modified part of the contents in Korean.
@@ -39,28 +39,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class AlarmAlertActivity extends Activity implements OnClickListener {
+public class AlarmAlertActivity extends Activity {
 
 	private Alarm alarm;
 	private MediaPlayer mediaPlayer;
 
-	private StringBuilder answerBuilder = new StringBuilder();
-
-	private MathProblem mathProblem;
-	private ImageProblem imageProblem;
-
 	private Vibrator vibrator;
 
-	private boolean alarmActive;
+	public boolean alarmActive;
 
-	private TextView problemView;
-	private TextView answerView;
-	private String answerString;
+	public static Activity alarm_alert_activity;
 
 
+	private boolean authenticated = false;
 
-	private boolean authenticated=false;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -74,11 +66,9 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 
 		final Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-				| WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+				| WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD); //Lock 화면 위로 실행 , Keyguard 해지
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
-		setContentView(R.layout.alarm_alert);   //alarm_alert
+				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON); //Screen을 켜진 상태로 유지, Screen On
 
 		Bundle bundle = this.getIntent().getExtras();
 		alarm = (Alarm) bundle.getSerializable("alarm");
@@ -87,6 +77,9 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 
 
 		boolean check_flag = false;
+
+		alarm_alert_activity = AlarmAlertActivity.this;
+
 		/*
 		try {
 			Intent intent2 = getIntent();
@@ -99,12 +92,53 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 		}
 		*/
 
+		//폰 상태 모니터링
+		TelephonyManager telephonyManager = (TelephonyManager) this
+				.getSystemService(Context.TELEPHONY_SERVICE);
 
+		//통화 중일 경우 벨소리 멈춤, 통화 종료후에 다시 울림
+		PhoneStateListener phoneStateListener = new PhoneStateListener() {
+			@Override
+			public void onCallStateChanged(int state, String incomingNumber) {
+				switch (state) {
+					case TelephonyManager.CALL_STATE_RINGING:
+						Log.d(getClass().getSimpleName(), "Incoming call: "
+								+ incomingNumber);
+						try {
+							mediaPlayer.pause();
+						} catch (IllegalStateException e) {
+
+						}
+						break;
+					case TelephonyManager.CALL_STATE_IDLE:
+						Log.d(getClass().getSimpleName(), "Call State Idle");
+						try {
+							mediaPlayer.start();
+						} catch (IllegalStateException e) {
+
+						}
+						break;
+				}
+				super.onCallStateChanged(state, incomingNumber);
+			}
+		};
+
+		//모니터링할 이벤트(통화상태)를 리스너에 등록
+		telephonyManager.listen(phoneStateListener,
+				PhoneStateListener.LISTEN_CALL_STATE);
+
+		// Toast.makeText(this, answerString, Toast.LENGTH_LONG).show();
+
+		startAlarm();
+
+
+		//해제방법에 따라 이미지인식 or 사칙연산 실행
 		switch (alarm.getHowto()) {
 			case IMAGE:
 				//imageProblem = new ImageProblem();
 
 				Intent intent1 = new Intent(this, ImageProblem.class);
+				intent1.putExtra("it_alarmActive", alarmActive);
 				startActivity(intent1);
 
 				/*
@@ -148,88 +182,21 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 					this.finish();
 				}
 				*/
+				break;
 
 
-			break;
 			case MATH:
-				mathProblem = new MathProblem(3);
-			break;
+				Intent intent2 = new Intent(this, MathProblem.class);
+				intent2.putExtra("it_alarmActive", true);
+				startActivity(intent2);
+				break;
 		}
-
-
-		try {
-			answerString = String.valueOf(mathProblem.getAnswer());
-			if (answerString.endsWith(".0")) {
-				answerString = answerString.substring(0, answerString.length() - 2);
-			}
-
-			problemView = (TextView) findViewById(R.id.textView1);
-			problemView.setText(mathProblem.toString());
-
-			answerView = (TextView) findViewById(R.id.textView2);
-			answerView.setText("= ?");
-
-			((Button) findViewById(R.id.Button0)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button1)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button2)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button3)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button4)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button5)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button6)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button7)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button8)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button9)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button_clear)).setOnClickListener(this);
-			//((Button) findViewById(R.id.Button_decimal)).setOnClickListener(this);
-			((Button) findViewById(R.id.Button_minus)).setOnClickListener(this);
-
-		} catch(Exception e){
-
-		}
-
-
-		TelephonyManager telephonyManager = (TelephonyManager) this
-				.getSystemService(Context.TELEPHONY_SERVICE);
-
-		PhoneStateListener phoneStateListener = new PhoneStateListener() {
-			@Override
-			public void onCallStateChanged(int state, String incomingNumber) {
-				switch (state) {
-				case TelephonyManager.CALL_STATE_RINGING:
-					Log.d(getClass().getSimpleName(), "Incoming call: "
-							+ incomingNumber);
-					try {
-						mediaPlayer.pause();
-					} catch (IllegalStateException e) {
-
-					}
-					break;
-				case TelephonyManager.CALL_STATE_IDLE:
-					Log.d(getClass().getSimpleName(), "Call State Idle");
-					try {
-						mediaPlayer.start();
-					} catch (IllegalStateException e) {
-
-					}
-					break;
-				}
-				super.onCallStateChanged(state, incomingNumber);
-			}
-		};
-
-		telephonyManager.listen(phoneStateListener,
-				PhoneStateListener.LISTEN_CALL_STATE);
-
-		// Toast.makeText(this, answerString, Toast.LENGTH_LONG).show();
-
-		startAlarm();
 
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		alarmActive = true; //알람이 울리고 있는 상태
 	}
 
 	private void startAlarm() {
@@ -238,7 +205,7 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 			mediaPlayer = new MediaPlayer();
 			if (alarm.getVibrate()) {
 				vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-				long[] pattern = { 1000, 200, 200, 200 };
+				long[] pattern = {1000, 200, 200, 200};
 				vibrator.vibrate(pattern, 0);
 			}
 			try {
@@ -249,9 +216,10 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 				mediaPlayer.setLooping(true);
 				mediaPlayer.prepare();
 				mediaPlayer.start();
+				alarmActive = true;
 
 			} catch (Exception e) {
-				mediaPlayer.release();
+				mediaPlayer.release(); //mediaPlayer 객체 완전히 제거(재사용 불가능)
 				alarmActive = false;
 			}
 		}
@@ -262,11 +230,11 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			long[] pattern = {100,300,100,700,300,2000};
+			long[] pattern = {100, 300, 100, 700, 300, 2000};
 
 
-			if(intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-				if(authenticated==false)
+			if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+				if (authenticated == false)
 					vibrator.vibrate(pattern, 0); //0:무한반복
 				else
 					vibrator.cancel();
@@ -276,20 +244,10 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 		}
 	};
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onBackPressed()
-	 */
-	@Override
-	public void onBackPressed() {
-		if (!alarmActive)
-			super.onBackPressed();
-	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Activity#onPause()
 	 */
 	@Override
@@ -301,6 +259,7 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onDestroy() {
 		try {
+			alarmActive = false;
 			if (vibrator != null)
 				vibrator.cancel();
 		} catch (Exception e) {
@@ -317,128 +276,6 @@ public class AlarmAlertActivity extends Activity implements OnClickListener {
 
 		}
 		super.onDestroy();
+		unregisterReceiver(vibrateReceiver);
 	}
-
-
-
-
-
-
-	//키보드에서 눌리는 동작들 같음
-
-	@Override
-	public void onClick(View v) {
-
-
-		try {
-			if (!alarmActive)
-				return;
-			String button = (String) v.getTag();
-			v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-			if (button.equalsIgnoreCase("clear")) {
-				if (answerBuilder.length() > 0) {
-					answerBuilder.setLength(answerBuilder.length() - 1);
-					answerView.setText(answerBuilder.toString());
-				}
-			} else if (button.equalsIgnoreCase(".")) {
-				if (!answerBuilder.toString().contains(button)) {
-					if (answerBuilder.length() == 0)
-						answerBuilder.append(0);
-					answerBuilder.append(button);
-					answerView.setText(answerBuilder.toString());
-				}
-			} else if (button.equalsIgnoreCase("-")) {
-				if (answerBuilder.length() == 0) {
-					answerBuilder.append(button);
-					answerView.setText(answerBuilder.toString());
-				}
-			} else {
-				answerBuilder.append(button);
-				answerView.setText(answerBuilder.toString());
-
-				// 사칙연산 정답으로 알람이 꺼지는 동작
-				if (isAnswerCorrect() || isAnswerCorrect2()) { //메소드 추가
-					alarmActive = false;
-					if (vibrator != null)
-						vibrator.cancel();
-					try {
-						mediaPlayer.stop();
-					} catch (IllegalStateException ise) {
-
-					}
-					try {
-						mediaPlayer.release();
-					} catch (Exception e) {
-
-					}
-					this.finish();
-				}
-			}
-			if (answerView.getText().length() >= answerString.length()
-					&& !isAnswerCorrect()) {
-				answerView.setTextColor(Color.RED);
-			} else {
-				answerView.setTextColor(Color.BLACK);
-			}
-		} catch(Exception e){
-
-		}
-	}
-
-
-	//사칙연산 정답일 경우
-	public boolean isAnswerCorrect() {
-		boolean correct = false;
-		try {
-			correct = mathProblem.getAnswer() == Float.parseFloat(answerBuilder
-					.toString());
-		} catch (NumberFormatException e) {
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		return correct;
-	}
-
-
-
-
-	//이미지 인식 성공일 경우
-	//이 메소드를 어디서 호출하지..
-	public boolean isAnswerCorrect2() {
-		boolean correct = false;
-
-
-		try {
-			correct = imageProblem.verifyImage(); //correct에 true 넣고
-
-			//알람 끄기
-			alarmActive = false;
-			if (vibrator != null)
-				vibrator.cancel();
-			try {
-				mediaPlayer.stop();
-			} catch (IllegalStateException ise) {
-
-			}
-			try {
-				mediaPlayer.release();
-			} catch (Exception e) {
-
-			}
-			this.finish();
-
-
-
-
-		} catch (NumberFormatException e) {
-			return false;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		return correct;
-	}
-
 }

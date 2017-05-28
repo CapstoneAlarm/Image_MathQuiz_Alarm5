@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  * I modified part of the contents in Korean.
@@ -67,7 +67,7 @@ public class AlarmActivity extends BaseActivity {
 						Database.init(AlarmActivity.this);
 						Database.deleteEntry(alarm);
 						AlarmActivity.this.callMathAlarmScheduleService();
-						
+
 						updateAlarmList();
 					}
 				});
@@ -108,15 +108,15 @@ public class AlarmActivity extends BaseActivity {
 		});
 	}
 
-	//액션바 메뉴생성
+	//액션바 메뉴생성 - 저장, 삭제 버튼 안보이게
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		boolean result = super.onCreateOptionsMenu(menu);		
+		boolean result = super.onCreateOptionsMenu(menu);
 		menu.findItem(R.id.menu_item_save).setVisible(false);
 		menu.findItem(R.id.menu_item_delete).setVisible(false);
-	    return result;
+		return result;
 	}
-		
+
 	@Override
 	protected void onPause() {
 		// setListAdapter(null);
@@ -136,11 +136,13 @@ public class AlarmActivity extends BaseActivity {
 		Database.init(AlarmActivity.this);
 		final List<Alarm> alarms = Database.getAll();	//알람리스트에 DB내용 가져오기
 		alarmListAdapter.setMathAlarms(alarms);
-		
+
 		runOnUiThread(new Runnable() {
 			public void run() {
-				// reload content			
-				AlarmActivity.this.alarmListAdapter.notifyDataSetChanged();				
+				// reload content
+				AlarmActivity.this.alarmListAdapter.notifyDataSetChanged();
+
+				//알람이 있을 시 "알람을 추가해주세요" 안 보이게 함
 				if(alarms.size() > 0){
 					findViewById(android.R.id.empty).setVisibility(View.INVISIBLE);
 				}else{

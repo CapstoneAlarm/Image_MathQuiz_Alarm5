@@ -7,18 +7,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,7 +29,6 @@ import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import za.co.neilson.alarm.AlarmActivity;
 import za.co.neilson.alarm.R;            //????????????????
 
 /**
@@ -60,16 +56,16 @@ public class ImageProblem extends AppCompatActivity{
     private ImageView imageViewResult;
     private CameraView cameraView;
 
-    private MathProblem mathProblem;
+    public boolean alarmActive;
+    public CountDownTimer countDownTimer = null;
 
-    private boolean authenticated=false;
+    AlarmAlertActivity alarm_alert_activity = (AlarmAlertActivity)AlarmAlertActivity.alarm_alert_activity;
 
+    public int failCount = 0;
 
     //hj
     private TextView timer;
     String mission="";
-
-    private Vibrator vibe;
 
     /*
     ImageProblem(){
@@ -80,15 +76,7 @@ public class ImageProblem extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-
-        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-        registerReceiver(vibrateReceiver, filter);
-
-
-        vibe = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
+        setContentView(R.layout.activity_tensor);
 
         cameraView = (CameraView) findViewById(R.id.cameraView);
         imageViewResult = (ImageView) findViewById(R.id.imageViewResult);
@@ -101,7 +89,8 @@ public class ImageProblem extends AppCompatActivity{
         //hj
         timer = (TextView) findViewById(R.id.timerTxt);
 
-
+        Intent it = getIntent();
+        alarmActive = it.getExtras().getBoolean("it_alarmActive");
 
 
 
@@ -193,7 +182,7 @@ public class ImageProblem extends AppCompatActivity{
 
         //hj
         //화면 켜지자마자 1분 타이머
-        final CountDownTimer countDownTimer = new CountDownTimer(60000, 1000) {
+        countDownTimer = new CountDownTimer(60000, 1000) {
             public void onTick(long millisUntilFinished) {
                 timer.setText("제한시간 : " + millisUntilFinished / 1000 + "초");
 
@@ -201,50 +190,19 @@ public class ImageProblem extends AppCompatActivity{
 
             public void onFinish() {
                 timer.setText("타임 오버");
-                finish(); //이 액티비티 종료하고
-                //부모 액티비티로 이동
-                //이뒤에 나오는 부모 액티비티에서 계산 문제가 안나오는 문제점을 해결해야 함.
-                //mathAfterImage();
 
-
-                /*
-                *
-                * 실패시 사칙연산으로 넘어가는 동작 넣기
-                *
-                *
-                *
-                *
-                *
-                */
-
-
+                Intent it = new Intent(ImageProblem.this, MathProblem.class);
+                it.putExtra("it_alarmActive", alarmActive);
+                startActivity(it);
+                finish();
             }
         }.start();
-
 
     }
 
 
 //Lockscreen.getInstance(getApplicationContext()).startLockscreenService();  ->안되는데..?
 
-
-    public BroadcastReceiver vibrateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            long[] pattern = {100,300,100,700,300,2000};
-
-
-            if(intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-                if(authenticated==false)
-                    vibe.vibrate(pattern, 0); //0:무한반복
-                else
-                    vibe.cancel();
-
-
-            }
-        }
-    };
 
 
 
@@ -253,12 +211,11 @@ public class ImageProblem extends AppCompatActivity{
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
-	    case KeyEvent.KEYCODE_BACK:
-	        return true;
+            case KeyEvent.KEYCODE_BACK:
+                return true;
         }
         return super.onKeyDown(keyCode, event);
     }
-
 
 
 
@@ -281,9 +238,8 @@ public class ImageProblem extends AppCompatActivity{
                 Toast.makeText(this,"인증 성공!",Toast.LENGTH_SHORT).show();
 
                 flag=true;
-                authenticated =true;
-                vibe.cancel();
 
+                alarm_alert_activity.finish();
                 finish();
                 finishAffinity();
 
@@ -307,6 +263,15 @@ public class ImageProblem extends AppCompatActivity{
             else{
                 Toast.makeText(this,"인증 실패..",Toast.LENGTH_SHORT).show();
                 flag=false;
+                failCount += 1;
+
+                if(failCount >= 3) {
+                    Intent it = new Intent(ImageProblem.this, MathProblem.class);
+                    it.putExtra("it_alarmActive", alarmActive);
+                    startActivity(it);
+                    finish();
+                }
+
 
                 //return flag;
             }
@@ -315,9 +280,8 @@ public class ImageProblem extends AppCompatActivity{
             if(textViewResult.getText().toString().contains("cup")){
                 Toast.makeText(this,"인증 성공!",Toast.LENGTH_SHORT).show();
                 flag=true;
-                authenticated =true;
-                vibe.cancel();
 
+                alarm_alert_activity.finish();
                 finish();
                 finishAffinity();
 
@@ -340,6 +304,14 @@ public class ImageProblem extends AppCompatActivity{
             else{
                 Toast.makeText(this,"인증 실패..",Toast.LENGTH_SHORT).show();
                 flag=false;
+                failCount += 1;
+
+                if(failCount >= 3) {
+                    Intent it = new Intent(ImageProblem.this, MathProblem.class);
+                    it.putExtra("it_alarmActive", alarmActive);
+                    startActivity(it);
+                    finish();
+                }
 
                 //return flag;
             }
@@ -349,9 +321,8 @@ public class ImageProblem extends AppCompatActivity{
             if(textViewResult.getText().toString().contains("seat")){
                 Toast.makeText(this,"인증 성공!",Toast.LENGTH_SHORT).show();
                 flag=true;
-                authenticated =true;
-                vibe.cancel();
 
+                alarm_alert_activity.finish();
                 finish();
                 finishAffinity();
 
@@ -373,6 +344,14 @@ public class ImageProblem extends AppCompatActivity{
             else{
                 Toast.makeText(this,"인증 실패..",Toast.LENGTH_SHORT).show();
                 flag=false;
+                failCount += 1;
+
+                if(failCount >= 3) {
+                    Intent it = new Intent(ImageProblem.this, MathProblem.class);
+                    it.putExtra("it_alarmActive", alarmActive);
+                    startActivity(it);
+                    finish();
+                }
 
                 //return flag;
             }
@@ -381,9 +360,8 @@ public class ImageProblem extends AppCompatActivity{
             if(textViewResult.getText().toString().contains("faucet")){
                 Toast.makeText(this,"인증 성공!",Toast.LENGTH_SHORT).show();
                 flag=true;
-                authenticated =true;
-                vibe.cancel();
 
+                alarm_alert_activity.finish();
                 finish();
                 finishAffinity();
                 /*
@@ -404,6 +382,14 @@ public class ImageProblem extends AppCompatActivity{
             else{
                 Toast.makeText(this,"인증 실패..",Toast.LENGTH_SHORT).show();
                 flag=false;
+                failCount += 1;
+
+                if(failCount >= 3) {
+                    Intent it = new Intent(ImageProblem.this, MathProblem.class);
+                    it.putExtra("it_alarmActive", alarmActive);
+                    startActivity(it);
+                    finish();
+                }
 
                 //return flag;
             }
@@ -424,30 +410,19 @@ public class ImageProblem extends AppCompatActivity{
 
         cameraView.start();
 
-
-
-
-
-
     }
 
-
-
-    public void mathAfterImage(){
-        Intent intent = new Intent(this,AlarmAlertActivity.class);
-        startActivity(intent);
-    }
 
     @Override
     protected void onPause() {
         cameraView.stop();
         super.onPause();
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        countDownTimer.cancel();
         executor.execute(new Runnable() {
             @Override
             public void run() {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<!--
 Copyright 2014 Sheldon Neilson www.neilson.co.za
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,23 @@ Unless required by applicable law or agreed to in writing, software distributed 
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
 <resources>
-	<!-- Application -->
-	<color name="holo_blue_light">#ff33b5e5</color>
-	
-    <!-- Math Alarm Activity -->
+    <!-- Application -->
+    <color name="holo_blue_light">#ff33b5e5</color>
+
+    <!-- Alarm -->
     <string name="app_name">SWU 알람</string>
     <string name="title_activity_set_alarms">Set Alarm</string>
     <string name="no_alarms">알람을 추가해주세요.</string>
-    
+
     <string name="button_new">추가</string>
-    
+
     <!-- Menu -->
     <string name="menu_item_new">추가</string>
     <string name="menu_item_save">저장</string>
     <string name="menu_item_delete">삭제</string>
-    <string name="menu_item_rate">Rate on Google Play</string>
-    <string name="menu_item_website">Website</string>
-    <string name="menu_item_report">Report a Bug</string>
-    
-    <!-- Alert -->
-	<string name="_0">0</string>
+
+    <!-- Math Alarm Activity -->
+    <string name="_0">0</string>
     <string name="_1">1</string>
     <string name="_2">2</string>
     <string name="_3">3</string>
@@ -42,15 +39,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
     <string name="_8">8</string>
     <string name="_9">9</string>
     <string name="decimal_button_text">,</string>
-	<string name="clear_button_text">Clear</string>
-	<string name="minus_button_text">-</string>
-	
-	
-	<color name="title_background_color">#000000</color>
-		
-	<string name="button_delete">삭제</string>
-	<string name="ok">확인</string>
-	<string name="cancel">취소</string>
+    <string name="clear_button_text">Clear</string>
+    <string name="minus_button_text">-</string>
+
+
+    <color name="title_background_color">#000000</color>
+
+    <string name="button_delete">삭제</string>
+    <string name="ok">확인</string>
+    <string name="cancel">취소</string>
 
     <!--tensorflow-->
     <string name="toggle_camera">카메라 모드 전환</string>

@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  * I modified part of the contents in Korean.
@@ -102,11 +102,16 @@ public class Alarm implements Serializable {
 	}
 
 
-	//알람 시간 등록
+	//알람 시간 등록 (요일, 날짜)
 	public Calendar getAlarmTime() {
+		//je
+		//알람 시간이 현재 시간 이전이라면 다음날로 알람 날짜를 바꿈
 		if (alarmTime.before(Calendar.getInstance()))
 			alarmTime.add(Calendar.DAY_OF_MONTH, 1);
 		//DAY_OF_WEEK 현재 요일  DAY_OF_MONTH 현재날짜
+
+		//je
+		//알람을 지정해둔 요일이 아니라면 계속해서 알람 날짜를 다음날로 바꿈
 		while(!Arrays.asList(getDays()).contains(Day.values()[alarmTime.get(Calendar.DAY_OF_WEEK)-1])){
 			alarmTime.add(Calendar.DAY_OF_MONTH, 1);
 		}
@@ -114,7 +119,7 @@ public class Alarm implements Serializable {
 	}
 
 
-	//알람시간 스트링
+	//알람시간 스트링 HH:MM
 	public String getAlarmTimeString() {
 
 		String time = "";
@@ -293,7 +298,7 @@ public class Alarm implements Serializable {
 		alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, getAlarmTime().getTimeInMillis(), pendingIntent);
 	}
 
-	///시간 계산 스트링 변환함수
+	///시간 계산 스트링 변환함수 (몇 분 후에 알람이 울리는지 계산)
 	public String getTimeUntilNextAlarmMessage(){
 		long timeDifference = getAlarmTime().getTimeInMillis() - System.currentTimeMillis();
 		long days = timeDifference / (1000 * 60 * 60 * 24);

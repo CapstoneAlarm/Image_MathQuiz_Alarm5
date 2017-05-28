@@ -5,7 +5,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  * I modified part of the contents in Korean.
@@ -14,9 +14,25 @@
  */
 package za.co.neilson.alarm.alert;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.support.v7.app.AppCompatActivity;
+import android.view.HapticFeedbackConstants;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.Random;
-public class MathProblem {
+
+import za.co.neilson.alarm.R;
+
+public class MathProblem extends AppCompatActivity implements View.OnClickListener {
 
 	enum Operator {
 		ADD, SUBTRACT, MULTIPLY, DIVIDE;
@@ -52,12 +68,27 @@ public class MathProblem {
 	private int answer = 0;
 	private int min = 0;
 	private int max = 12;
-	public MathProblem() {
-		this(3);
-	}
+	private int numParts = 3;
 
-	public MathProblem(int numParts) {
-		super();
+	private StringBuilder answerBuilder = new StringBuilder();
+	private TextView problemView;
+	private TextView answerView;
+	private String answerString;
+
+	public boolean alarmActive;
+
+	AlarmAlertActivity alarm_alert_activity = (AlarmAlertActivity)AlarmAlertActivity.alarm_alert_activity;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.alarm_alert);
+
+
+		Intent it = getIntent();
+		alarmActive = it.getExtras().getBoolean("it_alarmActive");
+
+
 		Random random = new Random(System.currentTimeMillis());
 
 		//숫자 arraylist
@@ -105,6 +136,34 @@ public class MathProblem {
 			combinedParts.set(i-1, answer);
 		}
 
+		//사칙연산의 문제와 답, 버튼 출력
+		try {
+			answerString = String.valueOf(this.getAnswer());
+
+			problemView = (TextView) findViewById(R.id.textView1);
+			problemView.setText(this.toString());
+
+			answerView = (TextView) findViewById(R.id.textView2);
+			answerView.setText("?");
+
+			((Button) findViewById(R.id.Button0)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button1)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button2)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button3)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button4)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button5)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button6)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button7)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button8)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button9)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button_clear)).setOnClickListener(this);
+			//((Button) findViewById(R.id.Button_decimal)).setOnClickListener(this);
+			((Button) findViewById(R.id.Button_minus)).setOnClickListener(this);
+
+		} catch(Exception e){
+
+		}
+
 	}
 
 	//sj
@@ -133,4 +192,68 @@ public class MathProblem {
 		return answer;
 	}
 
+
+	//버튼 터치시 이벤트
+	@Override
+	public void onClick(View v) {
+
+
+		try {
+			if (!alarmActive)
+				return;
+			String button = (String) v.getTag();
+			v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+			if (button.equalsIgnoreCase("clear")) {
+				if (answerBuilder.length() > 0) {
+					answerBuilder.setLength(answerBuilder.length() - 1);
+					answerView.setText(answerBuilder.toString());
+				}
+			} else if (button.equalsIgnoreCase("-")) {
+				if (answerBuilder.length() == 0) {
+					answerBuilder.append(button);
+					answerView.setText(answerBuilder.toString());
+				}
+			} else {
+				answerBuilder.append(button);
+				answerView.setText(answerBuilder.toString());
+
+				// 사칙연산 정답으로 액티비티 종료
+				if (isAnswerCorrect()) {
+					alarm_alert_activity.finish();
+					this.finish();
+				}
+			}
+			//입력한 답이 틀린 경우 빨간색, 정답인 경우 검은색으로 표시
+			if (answerView.getText().length() >= answerString.length()
+					&& !isAnswerCorrect()) {
+				answerView.setTextColor(Color.RED);
+			} else {
+				answerView.setTextColor(Color.BLACK);
+			}
+		} catch(Exception e){
+
+		}
+	}
+
+
+	//사칙연산 정답일 경우
+	public boolean isAnswerCorrect() {
+		boolean correct = false;
+		try {
+			correct = this.getAnswer() == Integer.parseInt(answerBuilder.toString());
+		} catch (NumberFormatException e) {
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return correct;
+	}
+
+
+	@Override
+	public void onBackPressed() {
+		if (!alarmActive)
+			super.onBackPressed();
+	}
 }

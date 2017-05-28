@@ -23,7 +23,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.mindorks.tensorflowexample.MainActivity">
+    tools:context=".alert.ImageProblem">
 
     <com.flurgle.camerakit.CameraView
         android:id="@+id/cameraView"
@@ -82,7 +82,6 @@
         android:layout_gravity="bottom|center"
         android:text="@string/detect_object"
         android:textAllCaps="false"
-        android:textColor="@android:color/black"
-        android:visibility="gone" />
+        android:textColor="@android:color/black" />
 
 </FrameLayout>

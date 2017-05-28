@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<!--
 Copyright 2014 Sheldon Neilson www.neilson.co.za
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,18 +23,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
 
-	
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar" >
-        
+
         <activity
             android:name="za.co.neilson.alarm.AlarmActivity"
             android:label="@string/app_name" >
@@ -43,17 +43,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <activity
             android:name="za.co.neilson.alarm.preferences.AlarmPreferencesActivity"
             android:label="@string/app_name"
             android:parentActivityName="za.co.neilson.alarm.AlarmActivity" >
             <!-- Parent activity meta-data to support API level 7+ -->
-	        <meta-data
-	            android:name="android.support.PARENT_ACTIVITY"
-	            android:value="za.co.neilson.alarm.AlarmActivity" />
-        </activity>        
-        
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="za.co.neilson.alarm.AlarmActivity" />
+        </activity>
+
         <service
             android:process="za.co.neilson.alarm.serviceProcess"
             android:name="za.co.neilson.alarm.service.AlarmService"
@@ -61,12 +61,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
             android:label="@string/app_name"
             >
         </service>
-		<receiver android:name="za.co.neilson.alarm.service.AlarmServiceBroadcastReciever" >
+        <receiver android:name="za.co.neilson.alarm.service.AlarmServiceBroadcastReciever" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        
+
         <activity
             android:name = "za.co.neilson.alarm.alert.AlarmAlertActivity"
             android:label="@string/app_name"
@@ -74,12 +74,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
         </activity>
 
         <activity
-            android:name = "za.co.neilson.alarm.alert.ImageProblem"
+            android:name = "za.co.neilson.alarm.alert.MathProblem"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
         </activity>
 
-		<receiver android:name="za.co.neilson.alarm.alert.AlarmAlertBroadcastReciever" >
+        <activity
+            android:name = "za.co.neilson.alarm.alert.ImageProblem"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:noHistory="true">
+        </activity>
+
+        <receiver android:name="za.co.neilson.alarm.alert.AlarmAlertBroadcastReciever" >
         </receiver>
         <receiver android:name = "za.co.neilson.alarm.telephony.PhoneStateChangedBroadcastReciever">
             <intent-filter>
